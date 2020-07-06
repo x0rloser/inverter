@@ -28,6 +28,7 @@ void usage(char *name)
 			"          -s <serial num>= data logger serial number in decimal or hex format\n"
 			"          -i <ip address>= data logger IP address in string format\n"
 			"          -p <port>      = data logger port in string format\n"
+			"          -u             = use UDP instead of TCP (default is to use TCP)\n"
 			"\n"
 			"Notes:\n"
 			"* This can run as a client or server.\n"
@@ -77,6 +78,8 @@ int run_as_client(const char* ip, const char* port,
 	// connect to server loop
 	while(1)
 	{
+		printf("Client connecting to %s:%s as %s\n", ip, port, useUDP?"UDP":"TCP");
+		
 		// connect to server
 		// stops if cant connect. may want to wait and retry X times
 		int fd_s = inv_connect_to_server(ip, port, useUDP);
@@ -185,7 +188,7 @@ int run_as_client(const char* ip, const char* port,
 }
 
 
-int run_as_server(const char* port, int useUDP, const char* filename)
+int run_as_server(const char* port, const char* filename)
 {
 	int ret;
 	uint8_t pkt_buff[103];
@@ -211,12 +214,14 @@ int run_as_server(const char* port, int useUDP, const char* filename)
 	}
 	
 	// start server
-	fd_l = inv_start_server(port, useUDP);
+	fd_l = inv_start_server(port);
 	if( fd_l < 0)
 	{
 		printf("Error starting server\n");
 		return -71;
 	}
+	
+	printf("Server running on port %s as %s\n", port, "TCP");
 	
 	// accept connections from clients - loop
 	while(1)
@@ -319,58 +324,67 @@ int main(int argc, char *argv[])
 	int use_udp = 0;
 	
 	// process args pased to program
-	if( argc == 1 )
+	if( argc <= 1 )
 	{
 		// no args, (only main filename) so print help
 		usage(argv[0]);
 		return 0;
 	}
-	for(argi=1; argi<argc; argc++)
+	for(argi=1; argi<argc; argi++)
 	{
 		if( strcasecmp(argv[argi], "-d")==0 )
 		{
-			if(argi+1 <= argc)
+			if(argi+1 >= argc)
 			{
 				printf("Param missing for %s\n", argv[argi]);
 				return -2;
 			}
 			delay = strtol(argv[argi+1], 0, 0);
+			argi++;
 		}
 		else if( strcasecmp(argv[argi], "-f")==0 )
 		{
-			if(argi+1 <= argc)
+			if(argi+1 >= argc)
 			{
 				printf("Param missing for %s\n", argv[argi]);
 				return -2;
 			}
 			filename = argv[argi+1];
+			argi++;
 		}
 		else if( strcasecmp(argv[argi], "-s")==0 )
 		{
-			if(argi+1 <= argc)
+			if(argi+1 >= argc)
 			{
 				printf("Param missing for %s\n", argv[argi]);
 				return -2;
 			}
 			serial_num = strtoul(argv[argi+1], 0, 0);
+			argi++;
 		}
 		else if( strcasecmp(argv[argi], "-i")==0 )
 		{
-			if(argi+1 <= argc)
+			if(argi+1 >= argc)
 			{
 				printf("Param missing for %s\n", argv[argi]);
 				return -2;
 			}
 			ip_str = argv[argi+1];
+			argi++;
 		}
 		else if( strcasecmp(argv[argi], "-p")==0 )
 		{
-			if(argi+1 <= argc)
+			if(argi+1 >= argc)
 			{
 				printf("Param missing for %s\n", argv[argi]);
 				return -2;
 			}
 			port_str = argv[argi+1];
+			argi++;
+		}
+		else if( strcasecmp(argv[argi], "-u")==0 )
+		{
+			use_udp = 1;
 		}
 		else
 		{
@@ -396,7 +410,7 @@ int main(int argc, char *argv[])
 	else
 	{
 		// accept client inverter connections
-		return run_as_server(port_str, use_udp, filename);
+		return run_as_server(port_str, filename);
 	}
 }
 

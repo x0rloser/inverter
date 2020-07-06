@@ -286,7 +286,7 @@ int inv_connect_to_server(const char* ip, const char* port, int useUDP)
 // 
 // returns: >=0 if successful (this will be the socket file descriptor)
 //			< 0 if error
-int inv_start_server(const char* port, int useUDP)
+int inv_start_server(const char* port)
 {
 	struct timeval timeout;
 	int flag = 1;
@@ -310,9 +310,6 @@ int inv_start_server(const char* port, int useUDP)
 	hints.ai_canonname = NULL;
 	hints.ai_addr = NULL;
 	hints.ai_next = NULL;
-	
-	if( useUDP )
-		hints.ai_socktype = SOCK_DGRAM;
 	
 	// get addr of server
 	ret = getaddrinfo(NULL, port, &hints, &a);

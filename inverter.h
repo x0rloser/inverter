@@ -51,7 +51,7 @@ int inv_connect_to_server(const char* ip, const char* port, int useUDP);
 // 
 // returns: >=0 if successful (this will be the socket file descriptor)
 //			< 0 if error
-int inv_start_server(const char* port, int useUDP);
+int inv_start_server(const char* port);
 
 // wait for a client to connect	
 int inv_listen_for_client(int lfd, struct sockaddr* addr, socklen_t* addrlen);
